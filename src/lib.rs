@@ -5,8 +5,8 @@ use std::collections::VecDeque;
 
 #[derive(Clone, Copy, PartialEq)]
 struct Point {
-    x: i16,
-    y: i16,
+    x: u16,
+    y: u16,
 }
 
 struct Snake {
@@ -67,8 +67,8 @@ impl Food {
 struct Game {
     snake: Snake,
     food: Food,
-    width: i32,
-    height: i32,
+    width: u32,
+    height: u32,
 }
 
 impl Game {
@@ -76,8 +76,63 @@ impl Game {
     fn new() -> Game {
         Game {
             snake: Snake::new(Point {x: 1, y: 1}),
-            food: Food::new()
+            food: Food::new(Point{x: 10, y: 10}),
+            width: 20,
+            height: 20,
         }
     }
+
+    fn build(width: u32, height: u32, food: Point, start_loc: Point) -> Game {
+        //
+        Game{
+            snake: Snake::new(start_loc),
+            food: Food::new(food),
+            width,
+            height,
+        }
+    }
+
+    fn draw(&self) {
+        let mut stdout = stdout();
+
+        // clear that terminal
+        stdout.execute(terminal::Clear(terminal::ClearType::All)).unwrap();
+        
+        // draw the snake
+        for segment in &self.snake.body {
+            // set the cursor
+            stdout.execute(
+                cursor::MoveTo(segment.x, segment.y)
+            ).unwrap();
+            print!("u");
+        }
+        stdout.execute(cursor::MoveTo(self.snake.body[0].x, self.snake.body[0].y)).unwrap();
+        print!("O"); 
+
+        // draw the food
+        stdout.execute(cursor::MoveTo(self.food.location.x, self.food.location.y)).unwrap();
+        print!("x");
+
+        stdout.flush().unwrap();
+    }
+
+    fn update(&mut self) {
+        self.snake.move_forward();
+        // check for eaten food
+        if self.food.location == self.snake.head() {
+            self.snake.grow();
+            // new food
+            self.food.location = Point {
+                x: self.food.location.y * 3 % self.width,
+                y: self.food.location.x * 3 % self.width,
+            }
+        }
+    }
+
+    fn is_over(&self) -> bool {
+        self.snake.head() == 
+    }
+
+
 }
 
