@@ -1,17 +1,17 @@
 use crossterm::{terminal, execute, event, style, cursor, ExecutableCommand};
+
 use std::io::{stdout, Write};
-use std::time::{Duration, Instant};
 use std::collections::VecDeque;
 
 #[derive(Clone, Copy, PartialEq)]
-struct Point {
-    x: u16,
-    y: u16,
+pub struct Point {
+    pub x: i16,
+    pub y: i16,
 }
 
-struct Snake {
+pub struct Snake {
     body: VecDeque<Point>,
-    direction: Point,
+    pub direction: Point,
 }
 
 impl Snake {
@@ -39,7 +39,7 @@ impl Snake {
         self.body.push_back(tail);
     }
 
-    fn head(&self) -> Point {
+    pub fn head(&self) -> Point {
         *self.body.front().unwrap()
     }
 
@@ -54,7 +54,7 @@ impl Snake {
     }
 }
 
-struct Food {
+pub struct Food {
     location: Point,
 }
 
@@ -64,25 +64,25 @@ impl Food {
     }
 }
 
-struct Game {
-    snake: Snake,
+pub struct Game {
+    pub snake: Snake,
     food: Food,
-    width: u32,
-    height: u32,
+    width: i16,
+    height: i16,
 }
 
 impl Game {
     // TODO, Whole lotta hard coded shit here
-    fn new() -> Game {
+    pub fn new() -> Game {
         Game {
             snake: Snake::new(Point {x: 1, y: 1}),
             food: Food::new(Point{x: 10, y: 10}),
-            width: 20,
-            height: 20,
+            width: 120,
+            height: 120,
         }
     }
 
-    fn build(width: u32, height: u32, food: Point, start_loc: Point) -> Game {
+    pub fn build(width: i16, height: i16, food: Point, start_loc: Point) -> Game {
         //
         Game{
             snake: Snake::new(start_loc),
@@ -92,7 +92,7 @@ impl Game {
         }
     }
 
-    fn draw(&self) {
+    pub fn draw(&self) {
         let mut stdout = stdout();
 
         // clear that terminal
@@ -102,21 +102,21 @@ impl Game {
         for segment in &self.snake.body {
             // set the cursor
             stdout.execute(
-                cursor::MoveTo(segment.x, segment.y)
+                cursor::MoveTo(segment.x as u16, segment.y as u16)
             ).unwrap();
             print!("u");
         }
-        stdout.execute(cursor::MoveTo(self.snake.body[0].x, self.snake.body[0].y)).unwrap();
+        stdout.execute(cursor::MoveTo(self.snake.body[0].x as u16, self.snake.body[0].y as u16)).unwrap();
         print!("O"); 
 
         // draw the food
-        stdout.execute(cursor::MoveTo(self.food.location.x, self.food.location.y)).unwrap();
+        stdout.execute(cursor::MoveTo(self.food.location.x as u16, self.food.location.y as u16)).unwrap();
         print!("x");
 
         stdout.flush().unwrap();
     }
 
-    fn update(&mut self) {
+    pub fn update(&mut self) {
         self.snake.move_forward();
         // check for eaten food
         if self.food.location == self.snake.head() {
@@ -129,8 +129,9 @@ impl Game {
         }
     }
 
-    fn is_over(&self) -> bool {
-        self.snake.head() == 
+    pub fn is_over(&self) -> bool {
+        let head = self.snake.head();
+        head.x < 0 || head.x >= self.width || head.y < 0 || head.y >= self.height || self.snake.is_collision()
     }
 
 
