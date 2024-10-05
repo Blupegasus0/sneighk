@@ -2,11 +2,21 @@ use crossterm::{terminal, execute, event, style, cursor, ExecutableCommand};
 
 use std::io::{stdout, Write};
 use std::collections::VecDeque;
+use std::fmt;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Point {
     pub x: i16,
     pub y: i16,
+}
+
+impl fmt::Debug for Point {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct("Point")
+            .field("x: {}", &self.x)
+            .field("y: {}", &self.y)
+            .finish()
+    }
 }
 
 pub struct Snake {
@@ -35,7 +45,10 @@ impl Snake {
     }
 
     fn grow(&mut self) {
-        let tail = *self.body.back().unwrap();
+        let tail = Point {
+            x: self.body.back().unwrap().x - self.direction.x,
+            y: self.body.back().unwrap().y - self.direction.y
+        };
         self.body.push_back(tail);
     }
 
@@ -44,9 +57,9 @@ impl Snake {
     }
 
     fn is_collision(&self) -> bool {
-        let head = &self.head();
+        let head = self.head();
         for body_segment in self.body.iter().skip(1) {
-            if *body_segment == *head {
+            if *body_segment == head {
                 return true;
             }
         }
@@ -118,13 +131,14 @@ impl Game {
 
     pub fn update(&mut self) {
         self.snake.move_forward();
+            println!("crashes here");
         // check for eaten food
         if self.food.location == self.snake.head() {
             self.snake.grow();
             // new food
             self.food.location = Point {
                 x: self.food.location.y * 3 % self.width,
-                y: self.food.location.x * 3 % self.width,
+                y: self.food.location.x * 3 % self.height,
             }
         }
     }
@@ -132,6 +146,7 @@ impl Game {
     pub fn is_over(&self) -> bool {
         let head = self.snake.head();
         head.x < 0 || head.x >= self.width || head.y < 0 || head.y >= self.height || self.snake.is_collision()
+        //false
     }
 
 

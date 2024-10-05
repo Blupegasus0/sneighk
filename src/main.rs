@@ -1,4 +1,5 @@
 use crossterm::{terminal, execute, event, style, cursor, ExecutableCommand};
+use crossterm::terminal::{enable_raw_mode, disable_raw_mode};
 
 use std::time::{Duration, Instant};
 
@@ -9,10 +10,11 @@ fn main() {
     let tick_rate = Duration::from_millis(200);
     let mut last_tick = Instant::now();
 
+    enable_raw_mode().unwrap();
 
     // Run loop 
     loop {
-        if event::poll(Duration::from_millis(0)).unwrap() {
+        if event::poll(Duration::from_millis(10)).unwrap() {
             if let event::Event::Key(key_event) = event::read().unwrap() {
                 match key_event.code {
                     event::KeyCode::Up => game.snake.direction = Point { x: 0, y: -1 },
@@ -39,5 +41,6 @@ fn main() {
     }
 
     println!("Game Over");
+    disable_raw_mode().unwrap();
 
 }
